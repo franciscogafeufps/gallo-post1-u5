@@ -1,42 +1,106 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reservas de Laboratorios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas de Laboratorios - Universidad</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 2.5rem 1rem; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        h1 { font-size: 1.875rem; font-weight: 700; color: #0f172a; }
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; }
+        .btn { display: inline-flex; align-items: center; padding: 0.65rem 1.25rem; border-radius: 0.5rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger); color: white; padding: 0.4rem 0.85rem; font-size: 0.85rem; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .alert { padding: 1rem 1.25rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .alert-success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .card { background-color: var(--card-bg); border-radius: 0.75rem; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f1f5f9; padding: 0.85rem 1.25rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+        .badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-confirmada { background-color: #dcfce7; color: #166534; }
+        .badge-pendiente { background-color: #fef3c7; color: #92400e; }
+        .badge-cancelada { background-color: #f1f5f9; color: #64748b; text-decoration: line-through; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+    </style>
 </head>
 <body>
-    <h1>Reservas de Laboratorios</h1>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Reservas de Laboratorios</h1>
+                <p class="subtitle">Panel de gestión y control de horarios académicos</p>
+            </div>
+            <a href="/reservas/nueva" class="btn btn-primary">+ Nueva Reserva</a>
+        </div>
 
-    <p th:if="${mensaje}" th:text="${mensaje}"></p>
-    <p th:if="${error}" th:text="${error}" style="color:red"></p>
+        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <a href="/reservas/nueva">Nueva reserva</a>
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Laboratorio</th>
-                <th>Solicitante</th>
-                <th>Inicio</th>
-                <th>Fin</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="r : ${reservas}">
-                <td th:text="${r.laboratorio.nombre}"></td>
-                <td th:text="${r.nombreSolicitante}"></td>
-                <td th:text="${r.inicio}"></td>
-                <td th:text="${r.fin}"></td>
-                <td th:text="${r.estado}"></td>
-                <td>
-                    <form th:if="${r.estado != null and r.estado.name() != 'CANCELADA'}" th:action="@{/reservas/{id}/cancelar(id=${r.id})}" method="post">
-                        <button type="submit">Cancelar</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="card">
+            <div th:if="${#lists.isEmpty(reservas)}" class="empty-state">
+                <p>No hay reservas registradas en este momento.</p>
+            </div>
+            <table th:if="${not #lists.isEmpty(reservas)}">
+                <thead>
+                    <tr>
+                        <th>Laboratorio</th>
+                        <th>Solicitante</th>
+                        <th>Horario (Inicio - Fin)</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="r : ${reservas}">
+                        <td>
+                            <strong th:text="${r.laboratorio != null ? r.laboratorio.nombre : 'N/A'}"></strong><br/>
+                            <small style="color:var(--text-muted)" th:text="${r.laboratorio != null ? r.laboratorio.ubicacion : ''}"></small>
+                        </td>
+                        <td>
+                            <span th:text="${r.nombreSolicitante}"></span><br/>
+                            <small style="color:var(--text-muted)" th:text="${r.correoSolicitante}"></small>
+                        </td>
+                        <td>
+                            <span th:text="${#temporals.format(r.inicio, 'dd/MM/yyyy HH:mm')}"></span> - 
+                            <span th:text="${#temporals.format(r.fin, 'HH:mm')}"></span>
+                        </td>
+                        <td th:text="${r.motivo}"></td>
+                        <td>
+                            <span th:if="${r.estado != null and r.estado.name() == 'CONFIRMADA'}" class="badge badge-confirmada" th:text="${r.estado}"></span>
+                            <span th:if="${r.estado != null and r.estado.name() == 'PENDIENTE'}" class="badge badge-pendiente" th:text="${r.estado}"></span>
+                            <span th:if="${r.estado != null and r.estado.name() == 'CANCELADA'}" class="badge badge-cancelada" th:text="${r.estado}"></span>
+                        </td>
+                        <td>
+                            <form th:if="${r.estado != null and r.estado.name() != 'CANCELADA'}" th:action="@{/reservas/{id}/cancelar(id=${r.id})}" method="post">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que deseas cancelar esta reserva?');">Cancelar</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
